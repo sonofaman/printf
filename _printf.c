@@ -16,6 +16,8 @@ int _printf(const char *format, ...)
 	int length;
 	va_list args;
 
+	if (format == NULL)
+		return (0);
 	va_start(args, format);
 	length = _print(format, args);
 	va_end(args);
@@ -26,7 +28,7 @@ int _printf(const char *format, ...)
  * _print - The helper function that implements
  * the print and formatting
  * @format: The string to be printed
- * @args: These are additional args which may be 0 or more and it's
+ * @arg: These are additional args which may be 0 or more and it's
  * of type va_list
  * Return: it returns an int... the number of characters
  * printed
