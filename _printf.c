@@ -65,6 +65,10 @@ int _print(const char *format, va_list arg)
 				_putchar(i);
 				length++;
 				break;
+			case '%':
+				_putchar(format[idx]);
+				length++;
+				break;
 		}
 		idx++;
 	}
