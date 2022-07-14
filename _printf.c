@@ -4,6 +4,7 @@
 
 unsigned int _strlen(const char *str);
 int _print(const char *format, va_list args);
+int _print_num(size_t num, size_t base);
 
 /**
  * _printf - A function that mimics the traditional c printf
@@ -37,9 +38,12 @@ int _print(const char *format, va_list arg)
 {
 	char *s;
 	size_t i;
+	int dec;
 	int length;
 	unsigned int idx, len = _strlen(format);
-
+	
+	if (format == NULL)
+		return (-1);
 	length = 0;
 	idx = 0;
 	while (idx < len)
@@ -51,6 +55,8 @@ int _print(const char *format, va_list arg)
 			idx++;
 		}
 		idx++;
+		if (idx >= len)
+			break;
 
 		switch (format[idx])
 		{
@@ -71,6 +77,27 @@ int _print(const char *format, va_list arg)
 				_putchar(format[idx]);
 				length++;
 				break;
+			case 'd':
+			case 'i':
+				dec = va_arg(arg, int);
+				if (dec < 0)
+				{
+					_putchar('-');
+					dec = -1 * dec;
+					length++;
+					length += _print_num(dec, 10);
+				}
+				else
+				{
+					length += _print_num(dec, 10);
+				}
+				break;
+			case 'b':
+				dec = va_arg(arg, int);
+				length += _print_num(dec, 2);
+				break;
+			default:
+				return (0);
 		}
 		idx++;
 	}
@@ -78,8 +105,7 @@ int _print(const char *format, va_list arg)
 }
 
 /**
- *
- * _strcpy - A function that finds the length of a string
+ * _strlen - A function that finds the length of a string
  * @str: The string
  * Return: The length
  */
@@ -93,4 +119,31 @@ unsigned int _strlen(const char *str)
 		length++;
 	return (length);
 
+}
+
+/**
+ * _print_num - prints numbers in their desired base.
+ * @num: The number to be printed
+ * @base: The base to be printed
+ * Return: int
+ */
+int _print_num(size_t num, size_t base)
+{
+	int length, i, mod;
+
+	i = num / base;
+	mod = num % base;
+	length = 1;
+
+	if (i > 0)
+	{
+		length += _print_num(i, base);
+	}
+	else
+	{
+		_putchar(mod + '0');
+		return (1);
+	}
+	_putchar(mod + '0');
+	return (length);
 }
