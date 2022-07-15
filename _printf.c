@@ -1,149 +1,66 @@
 #include "main.h"
-#include <stdarg.h>
-#include <stdlib.h>
 
-unsigned int _strlen(const char *str);
-int _print(const char *format, va_list args);
-int _print_num(size_t num, size_t base);
+void print_buffer(char buffer[], int *buff_ind);
 
 /**
- * _printf - A function that mimics the traditional c printf
- * @format: The string to be printed
- * Return: The length of the characters printed in int
+ * _printf - Printf function
+ * @format: format.
+ * Return: Printed chars.
  */
-
 int _printf(const char *format, ...)
 {
-	int length;
-	va_list args;
+	int i, printed = 0, printed_chars = 0;
+	int flags, width, precision, size, buff_ind = 0;
+	va_list list;
+	char buffer[BUFF_SIZE];
 
-	if (format == NULL)
-		return (0);
-	va_start(args, format);
-	length = _print(format, args);
-	va_end(args);
-	return (length);
-}
-
-/**
- * _print - The helper function that implements
- * the print and formatting
- * @format: The string to be printed
- * @arg: These are additional args which may be 0 or more and it's
- * of type va_list
- * Return: it returns an int... the number of characters
- * printed
- */
-int _print(const char *format, va_list arg)
-{
-	char *s;
-	size_t i;
-	int dec;
-	int length;
-	unsigned int idx, len = _strlen(format);
-	
 	if (format == NULL)
 		return (-1);
-	length = 0;
-	idx = 0;
-	while (idx < len)
-	{
-		while (format[idx] != '%' && idx < len)
-		{
-			_putchar(format[idx]);
-			length++;
-			idx++;
-		}
-		idx++;
-		if (idx >= len)
-			break;
 
-		switch (format[idx])
+	va_start(list, format);
+
+	for (i = 0; format && format[i] != '\0'; i++)
+	{
+		if (format[i] != '%')
 		{
-			case 's':
-				s = va_arg(arg, char *);
-				while (*s != '\0')
-				{
-					_putchar(*s++);
-					length++;
-				}
-				break;
-			case 'c':
-				i = va_arg(arg, int);
-				_putchar(i);
-				length++;
-				break;
-			case '%':
-				_putchar(format[idx]);
-				length++;
-				break;
-			case 'd':
-			case 'i':
-				dec = va_arg(arg, int);
-				if (dec < 0)
-				{
-					_putchar('-');
-					dec = -1 * dec;
-					length++;
-					length += _print_num(dec, 10);
-				}
-				else
-				{
-					length += _print_num(dec, 10);
-				}
-				break;
-			case 'b':
-				dec = va_arg(arg, int);
-				length += _print_num(dec, 2);
-				break;
-			default:
-				return (0);
+			buffer[buff_ind++] = format[i];
+			if (buff_ind == BUFF_SIZE)
+				print_buffer(buffer, &buff_ind);
+			/* write(1, &format[i], 1);*/
+			printed_chars++;
 		}
-		idx++;
+		else
+		{
+			print_buffer(buffer, &buff_ind);
+			flags = get_flags(format, &i);
+			width = get_width(format, &i, list);
+			precision = get_precision(format, &i, list);
+			size = get_size(format, &i);
+			++i;
+			printed = handle_print(format, &i, list, buffer,
+				flags, width, precision, size);
+			if (printed == -1)
+				return (-1);
+			printed_chars += printed;
+		}
 	}
-	return (length);
+
+	print_buffer(buffer, &buff_ind);
+
+	va_end(list);
+
+	return (printed_chars);
 }
 
 /**
- * _strlen - A function that finds the length of a string
- * @str: The string
- * Return: The length
+ * print_buffer - Prints the contents of the buffer if it exist
+ * @buffer: Array of chars
+ * @buff_ind: Index at which to add next char, represents the length.
  */
-unsigned int _strlen(const char *str)
+void print_buffer(char buffer[], int *buff_ind)
 {
-	unsigned long int i, length;
+	if (*buff_ind > 0)
+		write(1, &buffer[0], *buff_ind);
 
-	i = 0;
-	length = 0;
-	while (str[i++] != '\0')
-		length++;
-	return (length);
-
-}
-
-/**
- * _print_num - prints numbers in their desired base.
- * @num: The number to be printed
- * @base: The base to be printed
- * Return: int
- */
-int _print_num(size_t num, size_t base)
-{
-	int length, i, mod;
-
-	i = num / base;
-	mod = num % base;
-	length = 1;
-
-	if (i > 0)
-	{
-		length += _print_num(i, base);
-	}
-	else
-	{
-		_putchar(mod + '0');
-		return (1);
-	}
-	_putchar(mod + '0');
-	return (length);
+	*buff_ind = 0;
 }
